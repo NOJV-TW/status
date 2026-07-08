@@ -31,7 +31,7 @@ const workerConfig: WorkerConfig = {
   ],
   notification: {
     webhook: {
-      url: 'https://discord.com/api/webhooks/1524463725405540443/sIP1guTy5ivIcwifNRSNG0pj6Ni0OOl-bEwyJ2m7ipGeOI2KKUzNb60wJkBD55YwCAaK',
+      url: '__DISCORD_WEBHOOK_URL__',
       payloadType: 'json',
       payload: {
         embeds: [

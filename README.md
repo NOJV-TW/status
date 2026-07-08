@@ -17,7 +17,7 @@ https://status.nojv.tw — NOJV 服務狀態頁 + 掛掉時發 Discord 通知。
 ## Secrets
 
 - `CLOUDFLARE_API_TOKEN`(GitHub Actions secret):部署用,需要 Workers Scripts Edit + D1 Edit + Pages Edit。
-- Discord webhook URL 直接寫在 `uptime.config.ts`,所以本 repo 保持 **private**。
+- `DISCORD_WEBHOOK_URL`(GitHub Actions secret):Discord 通知目標,部署時注入 config 的 `__DISCORD_WEBHOOK_URL__` placeholder — repo 內無機密。
 
 ## Custom domain
 

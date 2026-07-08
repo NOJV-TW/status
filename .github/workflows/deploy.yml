@@ -11,6 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Inject Discord webhook URL
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [[ -z "$DISCORD_WEBHOOK_URL" ]]; then
+            echo "DISCORD_WEBHOOK_URL secret is not set" && exit 1
+          fi
+          sed -i "s|__DISCORD_WEBHOOK_URL__|$DISCORD_WEBHOOK_URL|" uptime.config.ts
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.3
         with:
