@@ -34,7 +34,12 @@ const workerConfig: WorkerConfig = {
       url: 'https://discord.com/api/webhooks/1524463725405540443/sIP1guTy5ivIcwifNRSNG0pj6Ni0OOl-bEwyJ2m7ipGeOI2KKUzNb60wJkBD55YwCAaK',
       payloadType: 'json',
       payload: {
-        content: '$MSG',
+        embeds: [
+          {
+            description: '$MSG',
+            color: '$COLOR',
+          },
+        ],
       },
       timeout: 10000,
     },

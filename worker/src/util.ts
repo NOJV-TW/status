@@ -67,22 +67,24 @@ function formatStatusChangeNotification(
   }
 }
 
-function templateWebhookPlayload(payload: any, message: string) {
+function templateWebhookPlayload(payload: any, message: string, color: number) {
   for (const key in payload) {
     if (Object.prototype.hasOwnProperty.call(payload, key)) {
       if (payload[key] === '$MSG') {
         payload[key] = message
+      } else if (payload[key] === '$COLOR') {
+        payload[key] = color
       } else if (typeof payload[key] === 'object' && payload[key] !== null) {
-        templateWebhookPlayload(payload[key], message)
+        templateWebhookPlayload(payload[key], message, color)
       }
     }
   }
 }
 
-async function webhookNotify(webhook: WebhookConfig, message: string) {
+async function webhookNotify(webhook: WebhookConfig, message: string, isUp: boolean) {
   if (Array.isArray(webhook)) {
     for (const w of webhook) {
-      await webhookNotify(w, message)
+      await webhookNotify(w, message, isUp)
     }
     return
   }
@@ -97,7 +99,7 @@ async function webhookNotify(webhook: WebhookConfig, message: string) {
     let payloadTemplated: { [key: string]: string | number } = JSON.parse(
       JSON.stringify(webhook.payload)
     )
-    templateWebhookPlayload(payloadTemplated, message)
+    templateWebhookPlayload(payloadTemplated, message, isUp ? 0x57f287 : 0xed4245)
     let body = undefined
 
     switch (webhook.payloadType) {
@@ -185,7 +187,7 @@ const formatAndNotify = async (
       reason,
       workerConfig.notification?.timeZone ?? 'Etc/GMT'
     )
-    await webhookNotify(workerConfig.notification.webhook, notification)
+    await webhookNotify(workerConfig.notification.webhook, notification, isUp)
   } else {
     console.log(`Webhook not set, skipping notification for ${monitor.name}`)
   }
