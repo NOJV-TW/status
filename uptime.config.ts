@@ -28,14 +28,6 @@ const workerConfig: WorkerConfig = {
       expectedCodes: [200],
       timeout: 10000,
     },
-    {
-      id: 'downtest',
-      name: 'TEMP alert drill (remove me)',
-      method: 'GET',
-      target: 'https://nojv.tw/api/this-endpoint-does-not-exist',
-      expectedCodes: [200],
-      timeout: 10000,
-    },
   ],
   notification: {
     webhook: {
