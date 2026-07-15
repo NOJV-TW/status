@@ -24,7 +24,7 @@ const workerConfig: WorkerConfig = {
       id: 'api',
       name: 'API (Postgres + Redis)',
       method: 'GET',
-      target: 'https://nojv.tw/api/healthz',
+      target: 'https://nojv.tw/api/readyz',
       expectedCodes: [200],
       timeout: 10000,
     },
