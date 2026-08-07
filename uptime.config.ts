@@ -10,6 +10,10 @@ const pageConfig: PageConfig = {
 }
 
 const workerConfig: WorkerConfig = {
+  releaseTracker: {
+    releaseUrl: 'https://nojv.tw/api/release',
+    healthUrls: ['https://nojv.tw/api/livez', 'https://nojv.tw/api/readyz'],
+  },
   monitors: [
     {
       id: 'web',

@@ -81,12 +81,17 @@ function templateWebhookPlayload(payload: any, message: string, color: number) {
   }
 }
 
-async function webhookNotify(webhook: WebhookConfig, message: string, isUp: boolean) {
+async function webhookNotify(
+  webhook: WebhookConfig,
+  message: string,
+  isUp: boolean
+): Promise<boolean> {
   if (Array.isArray(webhook)) {
+    let success = true
     for (const w of webhook) {
-      await webhookNotify(w, message, isUp)
+      success = (await webhookNotify(w, message, isUp)) && success
     }
-    return
+    return success
   }
 
   console.log(
@@ -140,11 +145,14 @@ async function webhookNotify(webhook: WebhookConfig, message: string, isUp: bool
       console.log(
         'Error calling webhook server, code: ' + resp.status + ', response: ' + (await resp.text())
       )
+      return false
     } else {
       console.log('Webhook notification sent successfully, code: ' + resp.status)
+      return true
     }
   } catch (e) {
     console.log('Error calling webhook server: ' + e)
+    return false
   }
 }
 
