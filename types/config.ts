@@ -51,8 +51,14 @@ export type WorkerConfig<TEnv = Env> = {
   kvWriteCooldownMinutes?: number
   passwordProtection?: string
   monitors: MonitorTarget[]
+  releaseTracker?: ReleaseTracker
   notification?: Notification
   callbacks?: Callbacks<TEnv>
+}
+
+export type ReleaseTracker = {
+  releaseUrl: string
+  healthUrls: string[]
 }
 
 export type Notification = {

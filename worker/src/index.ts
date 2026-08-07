@@ -1,9 +1,17 @@
 import { DurableObject } from 'cloudflare:workers'
-import { MonitorTarget } from '../../types/config'
+import type { MonitorTarget, ReleaseTracker } from '../../types/config'
 import { workerConfig } from '../../uptime.config'
 import { doMonitor, getStatus } from './monitor'
-import { formatAndNotify, getWorkerLocation } from './util'
+import { formatAndNotify, fetchTimeout, getWorkerLocation, webhookNotify } from './util'
 import { CompactedMonitorStateWrapper, getFromStore, setToStore } from './store'
+import {
+  formatReleaseNotification,
+  observeRelease,
+  parseReleaseResponse,
+  parseReleaseTrackerState,
+  resetReleaseObservation,
+  type ReleaseIdentity,
+} from './version'
 import pLimit from 'p-limit'
 
 export interface Env {
@@ -23,6 +31,38 @@ const Worker = {
 
     let statusChanged = false
     const currentTimeSecond = Math.round(Date.now() / 1000)
+
+    const releaseTrackerState = parseReleaseTrackerState(await getFromStore(env, 'release:state'))
+    const release = workerConfig.releaseTracker
+      ? await checkRelease(workerConfig.releaseTracker)
+      : null
+    const nextReleaseTrackerState = release
+      ? observeRelease(releaseTrackerState, release)
+      : { state: resetReleaseObservation(releaseTrackerState), shouldNotify: false }
+
+    if (release) {
+      if (nextReleaseTrackerState.shouldNotify) {
+        const sent = workerConfig.notification?.webhook
+          ? await webhookNotify(
+              workerConfig.notification.webhook,
+              formatReleaseNotification(release),
+              true
+            )
+          : false
+        if (sent) {
+          console.log(`Release notification sent for ${release.version} (${release.sourceSha})`)
+        } else {
+          nextReleaseTrackerState.state.notified = releaseTrackerState.notified
+          console.log(`Release notification failed for ${release.version}; will retry`)
+        }
+      }
+    } else {
+      console.log('Release tracker health check failed; resetting release observation')
+    }
+
+    if (JSON.stringify(nextReleaseTrackerState.state) !== JSON.stringify(releaseTrackerState)) {
+      await setToStore(env, 'release:state', JSON.stringify(nextReleaseTrackerState.state))
+    }
 
     // Parallel check multiple monitors
     // Max concurrent connection is 6 limited by Cloudflare Workers, we use 5 here to be safe
@@ -251,6 +291,23 @@ const Worker = {
 }
 
 export default Worker
+
+async function checkRelease(tracker: ReleaseTracker): Promise<ReleaseIdentity | null> {
+  try {
+    const [releaseResponse, ...healthResponses] = await Promise.all([
+      fetchTimeout(tracker.releaseUrl, 10000),
+      ...tracker.healthUrls.map((url) => fetchTimeout(url, 10000)),
+    ])
+    if ([releaseResponse, ...healthResponses].some((response) => response.status !== 200)) {
+      return null
+    }
+
+    return parseReleaseResponse(await releaseResponse.json())
+  } catch (error) {
+    console.log('Error checking production release: ' + error)
+    return null
+  }
+}
 
 export class RemoteChecker extends DurableObject {
   constructor(ctx: DurableObjectState, env: Env) {
