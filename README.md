@@ -7,7 +7,7 @@ https://status.nojv.tw — NOJV 服務狀態頁 + 掛掉時發 Discord 通知。
 ## 怎麼運作
 
 - 監控與通知設定都在 [`uptime.config.ts`](uptime.config.ts) — 改它、push 到 `main`,GitHub Actions 就會自動重新部署。
-- Worker 每分鐘檢查一次;連續 2 次失敗(gracePeriod)才發 Discord 告警,恢復時也會通知。
+- Worker 每分鐘檢查一次,檢查從 APAC 的 Durable Object 發出(`checkProxy: worker://apac`,失敗時退回 Worker 本地);連續失敗滿 5 分鐘(gracePeriod)才發 Discord 告警,恢復時也會通知。
 - Worker 也會檢查 `https://nojv.tw/api/release`、`/api/livez`、`/api/readyz`;新版本連續 2 次健康後,由同一個 Discord webhook 發布版本通知。第一次看到的版本只建立 baseline,不會補發舊版本通知。
 - 歷史資料存在 Cloudflare D1(`uptimeflare_d1`)。
 

@@ -23,6 +23,8 @@ const workerConfig: WorkerConfig = {
       statusPageLink: 'https://nojv.tw',
       expectedCodes: [200],
       timeout: 10000,
+      checkProxy: 'worker://apac',
+      checkProxyFallback: true,
     },
     {
       id: 'api',
@@ -31,6 +33,8 @@ const workerConfig: WorkerConfig = {
       target: 'https://nojv.tw/api/readyz',
       expectedCodes: [200],
       timeout: 10000,
+      checkProxy: 'worker://apac',
+      checkProxyFallback: true,
     },
   ],
   notification: {
@@ -48,8 +52,8 @@ const workerConfig: WorkerConfig = {
       timeout: 10000,
     },
     timeZone: 'Asia/Taipei',
-    // ponytail: 2 consecutive failed 1-min checks before alerting, to avoid tunnel-blip false alarms
-    gracePeriod: 2,
+    // ponytail: alert only after ~5 min of consecutive failed checks; shorter uplink/tunnel blips stay on the status page only
+    gracePeriod: 5,
   },
 }
 
